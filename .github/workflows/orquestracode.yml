@@ -1,0 +1,24 @@
+name: OrquestraCode Windows smoke tests
+on:
+  push:
+    branches: [feat/full-engineering-hybrid]
+  pull_request:
+    paths:
+      - 'scripts/install-orquestracode.ps1'
+      - 'scripts/test-orquestracode.ps1'
+      - 'skills/full-engineering/**'
+      - '.github/workflows/orquestracode.yml'
+jobs:
+  smoke:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar sintaxe e comportamento do instalador
+        shell: pwsh
+        run: |
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path scripts/install-orquestracode.ps1), [ref]$null, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          ./scripts/test-orquestracode.ps1
